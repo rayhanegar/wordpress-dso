@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  wordpress:
+    image: wordpress:latest
+    container_name: wordpress
+    restart: unless-stopped
+    # ports:
+    #   - '8080:80'
+    #   - '8443:443'
+    environment:
+      WORDPRESS_DB_HOST: wp-db:3306
+      WORDPRESS_DB_USER: "${WP_DB_USER}"
+      WORDPRESS_DB_PASSWORD: "${WP_DB_PASSWORD}"
+      WORDPRESS_DB_NAME: "${WP_DB_NAME}"
+    volumes:
+      - ./wp-content:/var/www/html/wp-content
+      - ./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro
+    networks:
+      proxy-network:
+        ipv4_address: 172.20.0.20
+      wp-internal: 
+    depends_on:
+      wp-db:
+        condition: service_healthy
+
+  wp-db:
+    image: mysql:8.0
+    container_name: wp-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: "${WP_DB_NAME}"
+      MYSQL_USER: "${WP_DB_USER}"
+      MYSQL_PASSWORD: "${WP_DB_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${WP_DB_ROOT_PASSWORD}"
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    networks:
+      - wp-internal  
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # wp-redis:
+  #   image: redis:7-alpine
+  #   container_name: wp-redis
+  #   restart: unless-stopped
+  #   command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+  #   volumes:
+  #     - ./redis-data:/data
+  #   networks:
+  #     - wp-internal  
+
+networks:
+  proxy-network:
+    external: true
+    name: proxy-network
+  
+  wp-internal:
+    driver: bridge
+    # ← No IPAM = automatic IP assignment
