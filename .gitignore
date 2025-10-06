@@ -81,6 +81,7 @@ wp-content/blogs.dir/
 wp-content/upgrade/
 wp-content/wp-cache-config.php
 wp-content/w3tc-config/
+wp-content/plugins/
 
 # Temporary Files
 *.tmp
@@ -109,4 +110,4 @@ uploads/.gitkeep
 logs/.gitkeep
 mysql-data/.gitkeep
 wp-config/.gitkeep
-
+wp-content/plugins/.gitkeep
