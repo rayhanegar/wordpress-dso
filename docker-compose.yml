@@ -5,8 +5,8 @@ services:
     image: wordpress:latest
     container_name: wordpress
     restart: unless-stopped
-    # ports:
-    #   - '8080:80'
+    ports:
+       - '8080:80'
     #   - '8443:443'
     environment:
       WORDPRESS_DB_HOST: wp-db:3306
